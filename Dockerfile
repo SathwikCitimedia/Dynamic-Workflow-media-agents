@@ -66,5 +66,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD curl -fsS "http://localhost:${PORT}/health" || exit 1
 
 # Bind to 0.0.0.0 so the service is reachable from outside the container.
-# Use shell form so ${PORT} is expanded at runtime (overridable via -e PORT=...).
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips="*"
+# JSON (exec) form so signals reach uvicorn directly; `sh -c` + `exec` keeps
+# ${PORT} runtime expansion (overridable via -e PORT=...) and makes uvicorn PID 1.
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips=*"]
